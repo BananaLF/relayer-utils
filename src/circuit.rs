@@ -80,7 +80,8 @@ pub struct EmailAuthInput {
     subject_idx: usize,
     domain_idx: usize,
     timestamp_idx: usize,
-    code_idx: usize,
+    address_idx: usize,
+    passkey_idx: usize,
 }
 
 impl CircuitInputParams {
@@ -317,7 +318,11 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
     let from_addr_idx = parsed_email.get_from_addr_idxes().unwrap().0;
     let domain_idx = parsed_email.get_email_domain_idxes().unwrap().0;
     let subject_idx = parsed_email.get_subject_all_idxes().unwrap().0;
-    let code_idx = match parsed_email.get_invitation_code_idxes() {
+    let address_idx = match parsed_email.get_address_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+    let passkey_idx = match parsed_email.get_passkey_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
@@ -333,7 +338,8 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
         subject_idx: subject_idx,
         domain_idx: domain_idx,
         timestamp_idx: timestamp_idx,
-        code_idx,
+        address_idx: address_idx,
+        passkey_idx: passkey_idx,
     };
 
     Ok(serde_json::to_string(&email_auth_input)?)
