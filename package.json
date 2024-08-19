@@ -1,5 +1,5 @@
 {
-  "name": "@zk-email/relayer-utils",
+  "name": "@bananalf/relayer-utils",
   "version": "0.2.4",
   "description": "",
   "main": "index.js",
@@ -28,13 +28,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zkemail/relayer-utils.git"
+    "url": "git+https://github.com/BananaLF/relayer-utils.git"
   },
   "binary": {
     "module_name": "index",
-    "host": "https://github.com/zkemail/relayer-utils/releases/download/",
+    "host": "https://github.com/BananaLF/relayer-utils/releases/download/",
     "remote_path": "{version}",
-    "package_name": "relayer-utils-{node_abi}-{platform}-{arch}.tar.gz",
+    "package_name": "relayer-utils-{platform}-{arch}.tar.gz",
     "module_path": "./"
   }
 }
