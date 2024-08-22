@@ -5,6 +5,7 @@ pub mod logger;
 pub mod parse_email;
 pub mod regex;
 pub mod statics;
+pub mod java_lib;
 
 pub use circuit::*;
 pub use converters::*;
