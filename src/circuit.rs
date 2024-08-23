@@ -366,3 +366,30 @@ pub fn generate_email_auth_input_node(mut cx: FunctionContext) -> JsResult<JsPro
 
     Ok(promise)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn test_generate_email_auth_input() {
+        let account_code = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
+        let account_code = AccountCode::from(hex2field(&account_code).unwrap());
+        let file_path = "./okx_pay_test0.eml";
+
+        let email = fs::read_to_string(file_path).unwrap();
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        // block generate_email_auth_input
+        let _result = match rt.block_on(generate_email_auth_input(email.as_str(), &account_code)) {
+        Ok(result) => {
+            println!("result{}",result);
+        },
+        Err(e) => {
+            println!("e{}",e.to_string());
+        },
+    };
+
+    }
+}
