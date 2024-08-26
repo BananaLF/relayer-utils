@@ -321,7 +321,9 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
         Ok(indexes) => {
             indexes.0
         },
-        Err(_) => 0,
+        Err(e) => {
+            return Err(e);
+        },
     };
     let mut address_idx = match parsed_email.get_address_idxes() {
         Ok(indexes) => indexes.0,
