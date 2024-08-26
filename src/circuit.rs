@@ -317,17 +317,31 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
 
     let from_addr_idx = parsed_email.get_from_addr_idxes().unwrap().0;
     let domain_idx = parsed_email.get_email_domain_idxes().unwrap().0;
-    let subject_idx = parsed_email.get_subject_all_idxes().unwrap().0;
-    let address_idx = match parsed_email.get_address_idxes() {
+    let subject_idx = match parsed_email.get_subject_all_idxes() {
+        Ok(indexes) => {
+            indexes.0
+        },
+        Err(_) => 0,
+    };
+    let mut address_idx = match parsed_email.get_address_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
-    let passkey_idx = match parsed_email.get_passkey_idxes() {
+    
+    let mut passkey_idx = match parsed_email.get_passkey_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
-    let timestamp_idx = parsed_email.get_timestamp_idxes().unwrap().0;
 
+    address_idx = address_idx - subject_idx;
+    passkey_idx = passkey_idx - subject_idx;
+    let timestamp_idx = match parsed_email.get_timestamp_idxes()  {
+        Ok(indexes) => {
+            indexes.0
+        },
+        Err(_) => 0,
+    };
+    //println!("{}",parsed_email.canonicalized_header.escape_default());
     let email_auth_input = EmailAuthInput {
         padded_header: email_circuit_inputs.in_padded,
         public_key: email_circuit_inputs.pubkey,
@@ -367,9 +381,10 @@ pub fn generate_email_auth_input_node(mut cx: FunctionContext) -> JsResult<JsPro
     Ok(promise)
 }
 
-
 #[cfg(test)]
 mod tests {
+    use fancy_regex::Regex;
+
     use super::*;
     use std::fs;
 
@@ -381,15 +396,47 @@ mod tests {
 
         let email = fs::read_to_string(file_path).unwrap();
         let rt = tokio::runtime::Runtime::new().unwrap();
+        //print!("{}", email.escape_default());
         // block generate_email_auth_input
         let _result = match rt.block_on(generate_email_auth_input(email.as_str(), &account_code)) {
-        Ok(result) => {
-            println!("result{}",result);
-        },
-        Err(e) => {
-            println!("e{}",e.to_string());
-        },
-    };
+            Ok(_result) => {
+                //println!("result:{}",_result);
+            }
+            Err(e) => {
+                println!("e{}", e.to_string());
+            }
+        };
+    }
 
+    #[test]
+    fn test_regex() {
+        let test_str = "\r\nsubject:hehe\nhehe";
+        let (index,endindex) = match extract_subject_all_idxes(&test_str) {
+            Ok(r) => {
+                (r[0].0,r[0].1)
+            },
+            Err(e) => {
+                println!("err:{}",e.to_string());
+                (0,0)
+            },
+        };
+        println!("index:{}-{}",index,endindex);
+        let entire_regex_str = "(\r\n|^)subject:[^\r\n]+\n";
+        let entire_regex = Regex::new(&entire_regex_str).unwrap();
+        let entire_found = match entire_regex.find(&test_str) {
+            Ok(o) => match o {
+                Some(o) => {o},
+                None => {
+                    println!("regex not found@@@@@");
+                    return;
+                },
+            },
+            Err(e) => {
+                println!("regex not found------:{}",e.to_string());
+                return;
+            },
+        };
+        println!("entire_found:{:?}",entire_found);
+    
     }
 }

@@ -1,11 +1,11 @@
 pub mod circuit;
 pub mod converters;
 pub mod cryptos;
+pub mod java_lib;
 pub mod logger;
 pub mod parse_email;
 pub mod regex;
 pub mod statics;
-pub mod java_lib;
 
 pub use circuit::*;
 pub use converters::*;
