@@ -10,6 +10,7 @@ exclude = ["index.node"]
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
+jni = {version = '0.21.1'}
 itertools = "0.10.3"
 serde_json = "1.0.95"
 serde = { version = "1.0.159", features = ["derive"] }

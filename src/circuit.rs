@@ -80,7 +80,8 @@ pub struct EmailAuthInput {
     subject_idx: usize,
     domain_idx: usize,
     timestamp_idx: usize,
-    code_idx: usize,
+    address_idx: usize,
+    passkey_idx: usize,
 }
 
 impl CircuitInputParams {
@@ -316,13 +317,33 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
 
     let from_addr_idx = parsed_email.get_from_addr_idxes().unwrap().0;
     let domain_idx = parsed_email.get_email_domain_idxes().unwrap().0;
-    let subject_idx = parsed_email.get_subject_all_idxes().unwrap().0;
-    let code_idx = match parsed_email.get_invitation_code_idxes() {
+    let subject_idx = match parsed_email.get_subject_all_idxes() {
+        Ok(indexes) => {
+            indexes.0
+        },
+        Err(e) => {
+            return Err(e);
+        },
+    };
+    let mut address_idx = match parsed_email.get_address_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
-    let timestamp_idx = parsed_email.get_timestamp_idxes().unwrap().0;
+    
+    let mut passkey_idx = match parsed_email.get_passkey_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
 
+    address_idx = address_idx - subject_idx;
+    passkey_idx = passkey_idx - subject_idx;
+    let timestamp_idx = match parsed_email.get_timestamp_idxes()  {
+        Ok(indexes) => {
+            indexes.0
+        },
+        Err(_) => 0,
+    };
+    //println!("{}",parsed_email.canonicalized_header.escape_default());
     let email_auth_input = EmailAuthInput {
         padded_header: email_circuit_inputs.in_padded,
         public_key: email_circuit_inputs.pubkey,
@@ -333,7 +354,8 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
         subject_idx: subject_idx,
         domain_idx: domain_idx,
         timestamp_idx: timestamp_idx,
-        code_idx,
+        address_idx: address_idx,
+        passkey_idx: passkey_idx,
     };
 
     Ok(serde_json::to_string(&email_auth_input)?)
@@ -359,4 +381,64 @@ pub fn generate_email_auth_input_node(mut cx: FunctionContext) -> JsResult<JsPro
     });
 
     Ok(promise)
+}
+
+#[cfg(test)]
+mod tests {
+    use fancy_regex::Regex;
+
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn test_generate_email_auth_input() {
+        let account_code = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
+        let account_code = AccountCode::from(hex2field(&account_code).unwrap());
+        let file_path = "./okx_pay_test0.eml";
+
+        let email = fs::read_to_string(file_path).unwrap();
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        //print!("{}", email.escape_default());
+        // block generate_email_auth_input
+        let _result = match rt.block_on(generate_email_auth_input(email.as_str(), &account_code)) {
+            Ok(_result) => {
+                //println!("result:{}",_result);
+            }
+            Err(e) => {
+                println!("e{}", e.to_string());
+            }
+        };
+    }
+
+    #[test]
+    fn test_regex() {
+        let test_str = "\r\nsubject:hehe\nhehe";
+        let (index,endindex) = match extract_subject_all_idxes(&test_str) {
+            Ok(r) => {
+                (r[0].0,r[0].1)
+            },
+            Err(e) => {
+                println!("err:{}",e.to_string());
+                (0,0)
+            },
+        };
+        println!("index:{}-{}",index,endindex);
+        let entire_regex_str = "(\r\n|^)subject:[^\r\n]+\n";
+        let entire_regex = Regex::new(&entire_regex_str).unwrap();
+        let entire_found = match entire_regex.find(&test_str) {
+            Ok(o) => match o {
+                Some(o) => {o},
+                None => {
+                    println!("regex not found@@@@@");
+                    return;
+                },
+            },
+            Err(e) => {
+                println!("regex not found------:{}",e.to_string());
+                return;
+            },
+        };
+        println!("entire_found:{:?}",entire_found);
+    
+    }
 }

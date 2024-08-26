@@ -132,6 +132,20 @@ impl ParsedEmail {
         Ok(idxes)
     }
 
+    pub fn get_address_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_address.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
+
+    pub fn get_passkey_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_passkey.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
+
     pub fn get_email_addr_in_subject(&self) -> Result<String> {
         let idxes = extract_subject_all_idxes(&self.canonicalized_header)?[0];
         let subject = self.canonicalized_header[idxes.0..idxes.1].to_string();

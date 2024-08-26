@@ -1,6 +1,7 @@
 pub mod circuit;
 pub mod converters;
 pub mod cryptos;
+pub mod java_lib;
 pub mod logger;
 pub mod parse_email;
 pub mod regex;
@@ -16,8 +17,6 @@ pub use statics::*;
 
 pub use neon::prelude::*;
 pub use poseidon_rs::*;
-pub use zk_regex_apis::extract_substrs::*;
-pub use zk_regex_apis::padding::*;
 
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
