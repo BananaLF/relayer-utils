@@ -107,14 +107,9 @@ impl ParsedEmail {
     }
 
     pub fn get_timestamp(&self) -> Result<u64> {
-        let idxes = extract_timestamp_idxes(&self.canonicalized_header)?[0];
+        let idxes = self.get_timestamp_idxes()?;
         let str = &self.canonicalized_header[idxes.0..idxes.1];
         Ok(str.parse()?)
-    }
-
-    pub fn get_timestamp_idxes(&self) -> Result<(usize, usize)> {
-        let idxes = extract_timestamp_idxes(&self.canonicalized_header)?[0];
-        Ok(idxes)
     }
 
     pub fn get_invitation_code(&self) -> Result<String> {
@@ -139,13 +134,25 @@ impl ParsedEmail {
         Ok(idxes)
     }
 
-    pub fn get_passkey_idxes(&self) -> Result<(usize, usize)> {
+    pub fn get_pubkey_idxes(&self) -> Result<(usize, usize)> {
         let regex_config =
-            serde_json::from_str(include_str!("../regexes/okx_pay_passkey.json")).unwrap();
+            serde_json::from_str(include_str!("../regexes/okx_pay_pubkey.json")).unwrap();
         let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
         Ok(idxes)
     }
 
+    pub fn get_validator_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_validator.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
+    pub fn get_timestamp_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_timestamp.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
     pub fn get_email_addr_in_subject(&self) -> Result<String> {
         let idxes = extract_subject_all_idxes(&self.canonicalized_header)?[0];
         let subject = self.canonicalized_header[idxes.0..idxes.1].to_string();

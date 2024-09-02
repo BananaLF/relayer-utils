@@ -81,7 +81,8 @@ pub struct EmailAuthInput {
     domain_idx: usize,
     timestamp_idx: usize,
     address_idx: usize,
-    passkey_idx: usize,
+    pubkey_idx: usize,
+    validator_idx: usize,
 }
 
 impl CircuitInputParams {
@@ -330,19 +331,26 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
         Err(_) => 0,
     };
     
-    let mut passkey_idx = match parsed_email.get_passkey_idxes() {
+    let mut pubkey_idx = match parsed_email.get_pubkey_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+
+    let mut validator_idx = match parsed_email.get_validator_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
 
     address_idx = address_idx - subject_idx;
-    passkey_idx = passkey_idx - subject_idx;
-    let timestamp_idx = match parsed_email.get_timestamp_idxes()  {
+    pubkey_idx = pubkey_idx - subject_idx;
+    validator_idx = validator_idx - subject_idx;
+    let mut timestamp_idx = match parsed_email.get_timestamp_idxes()  {
         Ok(indexes) => {
             indexes.0
         },
         Err(_) => 0,
     };
+    timestamp_idx = timestamp_idx - subject_idx;
     //println!("{}",parsed_email.canonicalized_header.escape_default());
     let email_auth_input = EmailAuthInput {
         padded_header: email_circuit_inputs.in_padded,
@@ -355,7 +363,8 @@ pub async fn generate_email_auth_input(email: &str, account_code: &AccountCode) 
         domain_idx: domain_idx,
         timestamp_idx: timestamp_idx,
         address_idx: address_idx,
-        passkey_idx: passkey_idx,
+        pubkey_idx: pubkey_idx,
+        validator_idx:validator_idx,
     };
 
     Ok(serde_json::to_string(&email_auth_input)?)

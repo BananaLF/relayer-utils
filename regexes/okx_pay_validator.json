@@ -2,7 +2,7 @@
   "parts": [
     {
       "is_public": false,
-      "regex_def": "Address: 0x"
+      "regex_def": "Validator: 0x"
     },
     {
       "is_public": true,
