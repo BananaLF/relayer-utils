@@ -1,3 +1,4 @@
+set -e
 #1. complie rust link
 
 #if you got some link error related platform,

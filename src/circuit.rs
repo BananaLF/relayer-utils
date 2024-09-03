@@ -71,18 +71,18 @@ pub struct CircuitInputParams {
 
 #[derive(Serialize, Deserialize)]
 pub struct EmailAuthInput {
-    padded_header: Vec<String>,
-    public_key: Vec<String>,
-    signature: Vec<String>,
-    padded_header_len: String,
-    account_code: String,
-    from_addr_idx: usize,
-    subject_idx: usize,
-    domain_idx: usize,
-    timestamp_idx: usize,
-    address_idx: usize,
-    pubkey_idx: usize,
-    validator_idx: usize,
+    pub padded_header: Vec<String>,
+    pub public_key: Vec<String>,
+    pub signature: Vec<String>,
+    pub padded_header_len: String,
+    pub account_code: String,
+    pub from_addr_idx: usize,
+    pub subject_idx: usize,
+    pub domain_idx: usize,
+    pub timestamp_idx: usize,
+    pub address_idx: usize,
+    pub pubkey_idx: usize,
+    pub validator_idx: usize,
 }
 
 impl CircuitInputParams {
@@ -403,7 +403,7 @@ mod tests {
     fn test_generate_email_auth_input() {
         let account_code = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
         let account_code = AccountCode::from(hex2field(&account_code).unwrap());
-        let file_path = "./okx_pay_test0.eml";
+        let file_path = "./success_test_gmail.eml";
 
         let email = fs::read_to_string(file_path).unwrap();
         let rt = tokio::runtime::Runtime::new().unwrap();
