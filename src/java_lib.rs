@@ -79,7 +79,7 @@ fn box_to_anyhow_error(b: Box<dyn Any + Send>) -> Error {
 // and at the end use `.into_raw()` to convert a local reference with a lifetime
 // into a raw pointer.
 #[no_mangle]
-pub extern "system" fn Java_ZKEmail_generateEmailInput<'local>(
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_generateEmailInput<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass,
     email: JString<'local>,
@@ -139,7 +139,7 @@ pub extern "system" fn Java_ZKEmail_generateEmailInput<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_ZKEmail_emailnullifer<'local>(
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_emailnullifer<'local>(
     env: JNIEnv<'local>,
     _class: JClass,
     signature: JByteArray<'local>,
@@ -183,7 +183,7 @@ pub extern "system" fn Java_ZKEmail_emailnullifer<'local>(
 
 
 #[no_mangle]
-pub extern "system" fn Java_ZKEmail_publickeyHash<'local>(
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_publickeyHash<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass,
     publickey: JString<'local>,
@@ -226,7 +226,7 @@ pub extern "system" fn Java_ZKEmail_publickeyHash<'local>(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_ZKEmail_emailHash<'local>(
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_emailHash<'local>(
     mut env: JNIEnv<'local>,
     _class: JClass,
     email_addr: JString<'local>,
