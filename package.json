@@ -1,6 +1,6 @@
 {
   "name": "@bananalf/relayer-utils",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "",
   "main": "index.js",
   "contributors": [
@@ -24,7 +24,7 @@
   "dependencies": {
     "@mapbox/node-pre-gyp": "^1.0",
     "cargo-cp-artifact": "^0.1",
-    "node-pre-gyp-github": "https://github.com/ultamatt/node-pre-gyp-github.git"
+    "node-pre-gyp-github": "git+https://github.com/ultamatt/node-pre-gyp-github.git"
   },
   "repository": {
     "type": "git",
