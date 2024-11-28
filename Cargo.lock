@@ -350,8 +350,8 @@ checksum = "6d43a04d8753f35258c91f8ec639f792891f748a1edbd759cf1dcea3382ad83c"
 
 [[package]]
 name = "cfdkim"
-version = "0.3.0"
-source = "git+https://github.com/zkemail/dkim.git#8ea4c54bde27944eb2c3ed7b02407111402d519b"
+version = "0.3.3"
+source = "git+https://github.com/zkemail/dkim.git#3b1cfd75e2afad12fbc1e8ece50e93e51415118b"
 dependencies = [
  "base64 0.21.7",
  "chrono",
