@@ -3,11 +3,12 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 
-class ZKEmail {
-    private static native String generateEmailInput(String email,String accountCode);
-    private static native String emailnullifer(byte[] signature);
-    private static native String publickeyHash(String publickey);
-    private static native String emailHash(String emailAddr,String accountCode);
+class ZKEmails {
+    // private static native String generateEmailInput(String email,String accountCode);
+    // private static native String emailnullifer(byte[] signature);
+    // private static native String publickeyHash(String publickey);
+    // private static native String emailHash(String emailAddr,String accountCode);
+    private static native String decoderPubdata(String[] inputs);
 
     static {
         System.loadLibrary("relayer_utils");
@@ -19,24 +20,44 @@ class ZKEmail {
         String expectEmailNullifier = "0x12c6fc2aaa42727d176c54ec69426cd627a7c23b24e27b04f417862eca256968";
         String expectEmailHash = "0x10241e7b040d1b3bd2bb81e7c8df72a56a6818baf6d836368d01a9718839295a";
         try {
-            String rawEmail = new String(Files.readAllBytes(Paths.get("./success_test_gmail.eml")));
-            String outputEmailInput = ZKEmail.generateEmailInput(rawEmail,"0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76");
-            System.out.println("outputEmailInput:"+outputEmailInput);
+            // String rawEmail = new String(Files.readAllBytes(Paths.get("./success_test_gmail.eml")));
+            // String outputEmailInput = ZKEmail.generateEmailInput(rawEmail,"0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76");
+            // System.out.println("outputEmailInput:"+outputEmailInput);
 
-            String signature = "McGlIbYIq4zFLmcIoJCd0fWejO1mQyWEfPwvO0daNZk3l+w2Zvv9PqS5c1P4oPN7S60i3DUdMGZOA4k3mBWEk72mAE107CUwyStmPiRmJ9+IA3Hr7Br0CLGw0qmuyYOKQHGVNMLw7kcFDGjTRAGwwcKxNH6IGSm2dMnPXvNxsU0uOI7veAyKjY2OIfStSf4pvoda9gQNKI8BdGIclWUyg+RPYTPHINZ8aSsf8V8F9mzZtynGLT88YIM3iQUFD2ywqlSUwQzhwuwOUiF4hgFm/I3b59PV7PGvIbO8SE9ugDuyjEWRUmY6IT66y97f/GfSLcAvq/Yi2y6eM+IOS+nw8A==";
-            byte[] decodedBytes = Base64.getDecoder().decode(signature);
+            // String signature = "McGlIbYIq4zFLmcIoJCd0fWejO1mQyWEfPwvO0daNZk3l+w2Zvv9PqS5c1P4oPN7S60i3DUdMGZOA4k3mBWEk72mAE107CUwyStmPiRmJ9+IA3Hr7Br0CLGw0qmuyYOKQHGVNMLw7kcFDGjTRAGwwcKxNH6IGSm2dMnPXvNxsU0uOI7veAyKjY2OIfStSf4pvoda9gQNKI8BdGIclWUyg+RPYTPHINZ8aSsf8V8F9mzZtynGLT88YIM3iQUFD2ywqlSUwQzhwuwOUiF4hgFm/I3b59PV7PGvIbO8SE9ugDuyjEWRUmY6IT66y97f/GfSLcAvq/Yi2y6eM+IOS+nw8A==";
+            // byte[] decodedBytes = Base64.getDecoder().decode(signature);
 
-            String outputEmailNullifier = ZKEmail.emailnullifer(decodedBytes);
-            System.out.println("outputEmailNullifier:"+outputEmailNullifier);
-            String public_key = "0x9edbd2293d6192a84a7b4c5c699d31f906e8b83b09b817dbcbf4bcda3c6ca02fd2a1d99f995b360f52801f79a2d40a9d31d535da1d957c44de389920198ab996377df7a009eee7764b238b42696168d1c7ecbc7e31d69bf3fcc337549dc4f0110e070cec0b111021f0435e51db415a2940011aee0d4db4767c32a76308aae634320642d63fe2e018e81f505e13e0765bd8f6366d0b443fa41ea8eb5c5b8aebb07db82fb5e10fe1d265bd61b22b6b13454f6e1273c43c08e0917cd795cc9d25636606145cff02c48d58d0538d96ab50620b28ad9f5aa685b528f41ef1bad24a546c8bdb1707fb6ee7a2e61bbb440cd9ab6795d4c106145000c13aeeedd678b05f";
-            String outputPublickeyHash = ZKEmail.publickeyHash(public_key);
-            System.out.println("outputPublickeyHash:"+outputPublickeyHash);
+            // String outputEmailNullifier = ZKEmail.emailnullifer(decodedBytes);
+            // System.out.println("outputEmailNullifier:"+outputEmailNullifier);
+            // String public_key = "0x9edbd2293d6192a84a7b4c5c699d31f906e8b83b09b817dbcbf4bcda3c6ca02fd2a1d99f995b360f52801f79a2d40a9d31d535da1d957c44de389920198ab996377df7a009eee7764b238b42696168d1c7ecbc7e31d69bf3fcc337549dc4f0110e070cec0b111021f0435e51db415a2940011aee0d4db4767c32a76308aae634320642d63fe2e018e81f505e13e0765bd8f6366d0b443fa41ea8eb5c5b8aebb07db82fb5e10fe1d265bd61b22b6b13454f6e1273c43c08e0917cd795cc9d25636606145cff02c48d58d0538d96ab50620b28ad9f5aa685b528f41ef1bad24a546c8bdb1707fb6ee7a2e61bbb440cd9ab6795d4c106145000c13aeeedd678b05f";
+            // String outputPublickeyHash = ZKEmail.publickeyHash(public_key);
+            // System.out.println("outputPublickeyHash:"+outputPublickeyHash);
 
 
-            String emailAddr = "lfprivatemail@gmail.com";
-            String accountCode = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
-            String outputEmailHash = ZKEmail.emailHash(emailAddr,accountCode);
-            System.out.println("outputEmailHash:"+outputEmailHash);
+            // String emailAddr = "lfprivatemail@gmail.com";
+            // String accountCode = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
+            // String outputEmailHash = ZKEmail.emailHash(emailAddr,accountCode);
+            // System.out.println("outputEmailHash:"+outputEmailHash);
+            String[] pubdata = {
+  "2018721414038404820327",
+  "0",
+  "0",
+  "0",
+  "0",
+  "0",
+  "0",
+  "0",
+  "0",
+  "6632353713085157925504008443078919716322386156160602218536961028046468237192",
+  "8493207383652490715378251287216535597812624715421107390886599766669628107112",
+  "7300822440554768645609367769095731068168691871678625160882522321750763055450",
+  "250689960257754200054025474985292455916166966017",
+  "864191251542667060224262456867428696580615649352",
+  "228192632673271878678993831162202243382",
+  "296859801269246450117816979618985368894",
+  "1725260084"};
+            String outputEmailHash = ZKEmails.decoderPubdata(pubdata);
+            System.out.println("outputEmailHash:" + outputEmailHash);
         } catch (Exception e) {
             System.out.println("@@@@@@");
             e.printStackTrace();

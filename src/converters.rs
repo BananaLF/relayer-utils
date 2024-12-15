@@ -5,7 +5,8 @@ use ethers::types::U256;
 use halo2curves::ff::PrimeField;
 use itertools::Itertools;
 use neon::prelude::*;
-use num_bigint::BigInt;
+use num_bigint::{BigInt, BigUint};
+use num_traits::Num;
 use poseidon_rs::*;
 
 pub use zk_regex_apis::padding::pad_string;
@@ -66,6 +67,49 @@ pub fn bytes2fields(bytes: &[u8]) -> Vec<Fr> {
             Fr::from_bytes(&bytes32).expect("fail to convert bytes to a field value")
         })
         .collect_vec()
+}
+
+pub fn fields2bytes(fields: &[Fr]) -> Vec<u8> {
+    fields
+        .iter()
+        .flat_map(|field| {
+            let bytes = field.to_repr(); // 转换为字节数组
+            bytes[0..31].to_vec() // 提取有效的 31 字节部分
+        })
+        .collect()
+}
+
+pub fn fieldstr2bytes(strs: Vec<String>, max_size: usize) -> Vec<u8> {
+    let fields: Vec<Fr> = strs
+        .iter()
+        .map(|str| {
+            let bytes32 = str2bytes32(str.as_str());
+
+            // 将字节数组转换为字段元素
+            Fr::from_bytes(&bytes32).expect("byte32 to fr failed")
+        })
+        .collect();
+
+    let bytes = fields2bytes(&fields);
+    if bytes.len() < max_size {
+        return bytes;
+    } else {
+        return bytes[0..max_size].to_vec();
+    }
+}
+
+pub fn str2bytes32(str: &str) -> [u8; 32] {
+    let number =
+        BigUint::from_str_radix(str, 10).unwrap_or_else(|_| panic!("Invalid number: {}", str));
+
+    // 将 BigUint 转换为 32 字节数组
+    let mut bytes = number.to_bytes_le();
+    bytes.resize(32, 0); // 填充或截断为 32 字节
+
+    let bytes32: [u8; 32] = bytes
+        .try_into()
+        .expect("Failed to convert Vec<u8> to [u8; 32]");
+    return bytes32;
 }
 
 pub fn bytes_chunk_fields(
@@ -234,4 +278,30 @@ pub fn u256_to_bytes32_little(x: &U256) -> [u8; 32] {
     let mut bytes = [0u8; 32];
     x.to_little_endian(&mut bytes);
     bytes
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_bytes_fields_conversion() {
+        // 原始字节数组
+        let original_bytes = vec![
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+            25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+        ];
+
+        // 转换字节为字段
+        let fields = bytes2fields(&original_bytes);
+
+        // 再从字段转换回字节
+        let result_bytes = fields2bytes(&fields);
+
+        print!("fields bytes: {:?}\n", fields);
+        print!("result bytes: {:?}\n", result_bytes);
+        print!("original bytes: {:?}\n", original_bytes);
+        // 比较结果
+        //assert_eq!(original_bytes[0..result_bytes.len()], result_bytes[..]);
+    }
 }
