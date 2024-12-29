@@ -111,7 +111,7 @@ pub async fn generate_email_auth_input_tron_for_java(
         Err(_) => 0,
     };
 
-    let mut validator_idx = match parsed_email.get_tron_address_idxes() {
+    let mut validator_idx = match parsed_email.get_tron_validator_idxes() {
         Ok(indexes) => indexes.0,
         Err(_) => 0,
     };
@@ -298,9 +298,13 @@ pub fn decode_pubdata_tron_for_java(pubdata: Vec<String>) -> Result<String> {
     temp.reverse();
     let email_hash = hex::encode(temp);
     // 12 eth_address
-    let eth_address = bs58::encode(fieldstr2bytes(pubdata[12..13].to_vec(), 25)).into_string();
+    let mut address_bytes = fieldstr2bytes(pubdata[12..13].to_vec(), 25);
+    address_bytes.reverse();
+    let eth_address = bs58::encode(address_bytes).into_string();
     // 13 validator
-    let validator = bs58::encode(fieldstr2bytes(pubdata[13..14].to_vec(), 25)).into_string();
+    let mut validator_bytes = fieldstr2bytes(pubdata[13..14].to_vec(), 25);
+    validator_bytes.reverse();
+    let validator = bs58::encode(validator_bytes).into_string();
     // 14-15 pubkey_bytes
     let pubkey_bytes_left = fieldstr2bytes(pubdata[14..15].to_vec(), 16);
     let pubkey_bytes_right = fieldstr2bytes(pubdata[15..16].to_vec(), 16);
@@ -370,6 +374,55 @@ mod tests {
         //     serde_json::to_string_pretty(original).unwrap()
         // );
         // println!("result: {}", result);
+        // 比较结果
+        assert_eq!(serde_json::to_string(original).unwrap(), result);
+    }
+
+    #[test]
+    fn test_decode_pubdata_tron_for_java() {
+        let original = &Pubdata {
+            domain: "gmail.com".to_string(),
+            pubkey_hash: "0ea9c777dc7110e5a9e89b13f0cfc540e3845ba120b2b6dc24024d61488d4788"
+                .to_string(),
+            email_nullifier: "12c6fc2aaa42727d176c54ec69426cd627a7c23b24e27b04f417862eca256968"
+                .to_string(),
+            email_hash: "10241e7b040d1b3bd2bb81e7c8df72a56a6818baf6d836368d01a9718839295a"
+                .to_string(),
+            eth_address: "TT5iK8oqGEyRKJAnRwrLSZ4fM5y77F2LNT".to_string(),
+            validator: "TFqY5k1nvqYuLbCZmwehxbTFCS1eWKgFSY".to_string(),
+            pubkey: "36415f605504b60cd9110d686c4dacab3e5d4f1ee8ef75ca4e5709d9381e55df".to_string(),
+            timestamp: "1725260084".to_string(),
+        };
+        let pubdata = [
+            "2018721414038404820327".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "0".to_string(),
+            "6632353713085157925504008443078919716322386156160602218536961028046468237192"
+                .to_string(),
+            "8493207383652490715378251287216535597812624715421107390886599766669628107112"
+                .to_string(),
+            "7300822440554768645609367769095731068168691871678625160882522321750763055450"
+                .to_string(),
+            "412614185606728529393157974940103532625248938116289359027920".to_string(),
+            "409589829848871404927940772198240099290401898606088774721113".to_string(),
+            "228192632673271878678993831162202243382".to_string(),
+            "296859801269246450117816979618985368894".to_string(),
+            "1725260084".to_string(),
+        ]
+        .to_vec();
+
+        let result = decode_pubdata_tron_for_java(pubdata).unwrap();
+        // println!(
+        //     "original: {}",
+        //     serde_json::to_string_pretty(original).unwrap()
+        // );
+        //println!("result: {}", result);
         // 比较结果
         assert_eq!(serde_json::to_string(original).unwrap(), result);
     }

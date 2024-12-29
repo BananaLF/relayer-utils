@@ -3,13 +3,13 @@ set -e
 
 #if you got some link error related platform,
 # you can custom build yourself lib.
-cargo build
+cargo build --release
 # macos suffix is dylib
 # linux suffix is so
-cp ./target/debug/librelayer_utils.dylib ./javalib
+cp ./target/release/librelayer_utils.dylib ./javalib
 
 #2. complie java
-javac ZKEmails.java
+javac ZKRelayerUtils.java
 
 #3. run java
-java -Djava.library.path=./javalib ZKEmails
+java -Djava.library.path=./javalib ZKRelayerUtils

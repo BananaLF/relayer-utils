@@ -3,12 +3,13 @@ import java.nio.file.Paths;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 
-class ZKEmails {
+class ZKRelayerUtils {
     // private static native String generateEmailInput(String email,String accountCode);
     // private static native String emailnullifer(byte[] signature);
     // private static native String publickeyHash(String publickey);
     // private static native String emailHash(String emailAddr,String accountCode);
-    private static native String decoderPubdata(String[] inputs);
+    private static native String decoderPubdataForTron(String[] inputs);
+    private static native String generateEmailInputForTron(String email,String accountCode);
 
     static {
         System.loadLibrary("relayer_utils");
@@ -38,26 +39,38 @@ class ZKEmails {
             // String accountCode = "0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76";
             // String outputEmailHash = ZKEmail.emailHash(emailAddr,accountCode);
             // System.out.println("outputEmailHash:"+outputEmailHash);
-            String[] pubdata = {
-  "2018721414038404820327",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "6632353713085157925504008443078919716322386156160602218536961028046468237192",
-  "8493207383652490715378251287216535597812624715421107390886599766669628107112",
-  "7300822440554768645609367769095731068168691871678625160882522321750763055450",
-  "250689960257754200054025474985292455916166966017",
-  "864191251542667060224262456867428696580615649352",
-  "228192632673271878678993831162202243382",
-  "296859801269246450117816979618985368894",
-  "1725260084"};
-            String outputEmailHash = ZKEmails.decoderPubdata(pubdata);
-            System.out.println("outputEmailHash:" + outputEmailHash);
+            // String[] pubdata = {
+            //         "2018721414038404820327",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "0",
+            //         "6632353713085157925504008443078919716322386156160602218536961028046468237192",
+            //         "8493207383652490715378251287216535597812624715421107390886599766669628107112",
+            //         "7300822440554768645609367769095731068168691871678625160882522321750763055450",
+            //         "250689960257754200054025474985292455916166966017",
+            //         "864191251542667060224262456867428696580615649352",
+            //         "228192632673271878678993831162202243382",
+            //         "296859801269246450117816979618985368894",
+            //         "1725260084"};
+            // String outputEmailHash = ZKEmails.decoderPubdata(pubdata);
+            // System.out.println("outputEmailHash:" + outputEmailHash);
+
+
+            System.out.println("=====================outputEmailInputForTron=====================");
+            String rawEmailForTron = new String(Files.readAllBytes(Paths.get("./tron_success_test_gmail.eml")));
+            String outputEmailInputForTron = ZKRelayerUtils.generateEmailInputForTron(rawEmailForTron,"0x01eb9b204cc24c3baee11accc37d253a9c53e92b1a2cc07763475c135d575b76");
+            System.out.println("outputEmailInputForTron:" + outputEmailInputForTron);
+
+            System.out.println("=====================outputDecoderPubdataForTron=====================");
+            String[] pubdataForTron = {
+                    "2018721414038404820327","0","0","0","0","0","0","0","0","6632353713085157925504008443078919716322386156160602218536961028046468237192","2387779902037282069704409834881966104308491673037360215076659733214387630188","7300822440554768645609367769095731068168691871678625160882522321750763055450","412614185606728529393157974940103532625248938116289359027920","409589829848871404927940772198240099290401898606088774721113","303909282399881715244421536949805934693","174575003119183392837963462063733119900","1730264400"};
+            String outputDecoderPubdataForTron = ZKRelayerUtils.decoderPubdataForTron(pubdataForTron);
+            System.out.println("outputDecoderPubdataForTron:" + outputDecoderPubdataForTron);
         } catch (Exception e) {
             System.out.println("@@@@@@");
             e.printStackTrace();
