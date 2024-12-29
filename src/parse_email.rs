@@ -134,6 +134,13 @@ impl ParsedEmail {
         Ok(idxes)
     }
 
+    pub fn get_tron_address_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_tron_address.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
+
     pub fn get_pubkey_idxes(&self) -> Result<(usize, usize)> {
         let regex_config =
             serde_json::from_str(include_str!("../regexes/okx_pay_pubkey.json")).unwrap();
@@ -144,6 +151,12 @@ impl ParsedEmail {
     pub fn get_validator_idxes(&self) -> Result<(usize, usize)> {
         let regex_config =
             serde_json::from_str(include_str!("../regexes/okx_pay_validator.json")).unwrap();
+        let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
+        Ok(idxes)
+    }
+    pub fn get_tron_validator_idxes(&self) -> Result<(usize, usize)> {
+        let regex_config =
+            serde_json::from_str(include_str!("../regexes/okx_pay_tron_validator.json")).unwrap();
         let idxes = extract_substr_idxes(&self.canonicalized_header, &regex_config)?[0];
         Ok(idxes)
     }

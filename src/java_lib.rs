@@ -155,6 +155,73 @@ pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUt
 }
 
 #[no_mangle]
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_generateEmailInputForTron<
+    'local,
+>(
+    mut env: JNIEnv<'local>,
+    _class: JClass,
+    email: JString<'local>,
+    account_code: JString<'local>,
+) -> JString<'local> {
+    let email: String = match env.get_string(&email) {
+        Ok(str) => str.into(),
+        Err(e) => {
+            let output = env
+                .new_string(
+                    JavaResponse::error_response("can not got email from input", e.into())
+                        .to_json(),
+                )
+                .expect("Couldn't create java string!");
+            return output;
+        }
+    };
+
+    let account_code: String = match env.get_string(&account_code) {
+        Ok(str) => str.into(),
+        Err(e) => {
+            let output = env
+                .new_string(
+                    JavaResponse::error_response("can not got account code from input", e.into())
+                        .to_json(),
+                )
+                .expect("Couldn't create java string!");
+            return output;
+        }
+    };
+    let result = panic::catch_unwind(|| {
+        let account_code = hex2field(&account_code).unwrap();
+        let account_code = AccountCode::from(account_code);
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        // block generate_email_auth_input
+        let result = rt
+            .block_on(generate_email_auth_input_tron_for_java(
+                email.as_str(),
+                &account_code,
+            ))
+            .unwrap();
+        result
+    });
+    let result = match result {
+        Ok(result) => {
+            let output = env
+                .new_string(JavaResponse::success_response(result.as_str()).to_json())
+                .expect("Couldn't create java string!");
+            output
+        }
+        Err(e) => {
+            let panic_message = box_to_anyhow_error(e);
+            let output = env
+                .new_string(
+                    JavaResponse::error_response("account is wrong value", panic_message).to_json(),
+                )
+                .expect("Couldn't create java string!");
+            output
+        }
+    };
+    result
+}
+
+#[no_mangle]
 pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_emailnullifer<
     'local,
 >(
@@ -353,6 +420,76 @@ pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUt
 
     let result = panic::catch_unwind(|| {
         let email_hash = decode_pubdata_for_java(pub_data).unwrap();
+        email_hash
+    });
+    let result = match result {
+        Ok(r) => {
+            let output = env
+                .new_string(JavaResponse::success_response(r.as_str()).to_json())
+                .expect("Couldn't create java string!");
+            output
+        }
+        Err(e) => {
+            let panic_message = box_to_anyhow_error(e);
+            let output = env
+                .new_string(
+                    JavaResponse::error_response("decode_pubdata_for_java failed", panic_message)
+                        .to_json(),
+                )
+                .expect("Couldn't create java string!");
+            return output;
+        }
+    };
+    result
+}
+
+#[no_mangle]
+pub extern "system" fn Java_com_okcoin_wallet_sa_service_utils_email_ZKRelayerUtils_decoderPubdataForTron<
+    'local,
+>(
+    mut env: JNIEnv<'local>,
+    _class: JClass,
+    inputs: JObjectArray<'local>,
+) -> JString<'local> {
+    // 获取数组长度
+    let array_length = match env.get_array_length(&inputs) {
+        Ok(str) => str.into(),
+        Err(e) => {
+            let output = env
+                .new_string(JavaResponse::error_response("can not got pubdata", e.into()).to_json())
+                .expect("Couldn't got java pubdata!");
+            return output;
+        }
+    };
+    if array_length != PUBDATA_LENGHT {
+        return env
+            .new_string(
+                JavaResponse::error_response_from_msg(
+                    format!("pubdata length isn't equal to 17, actual: {}", array_length).as_str(),
+                )
+                .to_json(),
+            )
+            .expect("Couldn't create array length error");
+    }
+    let mut pub_data: Vec<String> = Vec::new();
+    // 遍历数组
+    for i in 0..array_length {
+        // 获取数组中的每个元素，返回一个 `jobject`，需要转换为 `jstring`
+        let element: JObject = env
+            .get_object_array_element(&inputs, i)
+            .expect("Failed to get array element");
+
+        // 将 `jstring` 转换为 Rust 的 `String`
+        let java_str: JString = element.into();
+        let rust_string: String = env
+            .get_string(&java_str)
+            .expect("Failed to convert jstring to Rust String")
+            .into();
+        pub_data.push(rust_string.clone());
+    }
+
+    let result = panic::catch_unwind(|| {
+        let email_hash = decode_pubdata_tron_for_java(pub_data).unwrap();
         email_hash
     });
     let result = match result {

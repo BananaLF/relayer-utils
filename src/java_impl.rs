@@ -75,6 +75,74 @@ pub async fn generate_email_auth_input_for_java(
     Ok(serde_json::to_string(&email_auth_input)?)
 }
 
+pub async fn generate_email_auth_input_tron_for_java(
+    email: &str,
+    account_code: &AccountCode,
+) -> Result<String> {
+    let parsed_email = ParsedEmail::new_from_raw_email(&email).await?;
+    let circuit_input_params = circuit::CircuitInputParams::new(
+        vec![],
+        parsed_email.canonicalized_header.as_bytes().to_vec(),
+        "".to_string(),
+        vec_u8_to_bigint(parsed_email.clone().signature),
+        vec_u8_to_bigint(parsed_email.clone().public_key),
+        None,
+        Some(1024),
+        Some(64),
+        Some(true),
+    );
+    let email_circuit_inputs = circuit::generate_circuit_inputs(circuit_input_params);
+
+    let from_addr_idx = parsed_email.get_from_addr_idxes().unwrap().0;
+    let domain_idx = parsed_email.get_email_domain_idxes().unwrap().0;
+    let subject_idx = match parsed_email.get_subject_all_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(e) => {
+            return Err(e);
+        }
+    };
+    let mut address_idx = match parsed_email.get_tron_address_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+
+    let mut pubkey_idx = match parsed_email.get_pubkey_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+
+    let mut validator_idx = match parsed_email.get_tron_address_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+
+    address_idx = address_idx - subject_idx;
+    pubkey_idx = pubkey_idx - subject_idx;
+    validator_idx = validator_idx - subject_idx;
+    let mut timestamp_idx = match parsed_email.get_timestamp_idxes() {
+        Ok(indexes) => indexes.0,
+        Err(_) => 0,
+    };
+    timestamp_idx = timestamp_idx - subject_idx;
+    //println!("{}",parsed_email.canonicalized_header.escape_default());
+    let email_auth_input = EmailAuthInput {
+        padded_header: email_circuit_inputs.in_padded,
+        public_key: email_circuit_inputs.pubkey,
+        signature: email_circuit_inputs.signature,
+        padded_header_len: email_circuit_inputs.in_len_padded_bytes,
+        account_code: field2hex(&account_code.0),
+        from_addr_idx: from_addr_idx,
+        subject_idx: subject_idx,
+        domain_idx: domain_idx,
+        timestamp_idx: timestamp_idx,
+        address_idx: address_idx,
+        pubkey_idx: pubkey_idx,
+        validator_idx: validator_idx,
+    };
+
+    Ok(serde_json::to_string(&email_auth_input)?)
+}
+
 pub fn generate_email_nullifier_for_java(mut signature: Vec<u8>) -> Result<String> {
     signature.reverse();
     let nullifier = match email_nullifier(&signature) {
@@ -174,6 +242,65 @@ pub fn decode_pubdata_for_java(pubdata: Vec<String>) -> Result<String> {
     let eth_address = hex::encode(fieldstr2bytes(pubdata[12..13].to_vec(), 20));
     // 13 validator
     let validator = hex::encode(fieldstr2bytes(pubdata[13..14].to_vec(), 20));
+    // 14-15 pubkey_bytes
+    let pubkey_bytes_left = fieldstr2bytes(pubdata[14..15].to_vec(), 16);
+    let pubkey_bytes_right = fieldstr2bytes(pubdata[15..16].to_vec(), 16);
+    let pubkey = hex::encode([pubkey_bytes_left, pubkey_bytes_right].concat());
+    // 16 timestamp
+    let timestamp = pubdata[16].clone();
+
+    let result = &Pubdata {
+        domain,
+        pubkey_hash,
+        email_nullifier,
+        email_hash,
+        eth_address,
+        validator,
+        pubkey,
+        timestamp,
+    };
+    Ok(serde_json::to_string(result).expect("result serde json failed"))
+}
+
+// tron decode
+
+pub fn decode_pubdata_tron_for_java(pubdata: Vec<String>) -> Result<String> {
+    /*
+     * pubdata:
+     * 0 - 8 domain
+     * 9 publicKeyHash
+     * 10 emailNullifier
+     * 11 emailHash
+     * 12 eth_address
+     * 13 validator
+     * 14 pubkey_bytes_left
+     * 15 pubkey_bytes_right
+     * 16 timestamp
+     */
+    // 0 - 8 domain
+    let domain_bytes = &pubdata[0..9];
+    let domain_convert = fieldstr2bytes(domain_bytes.to_vec(), 255);
+    let domain = String::from_utf8(domain_convert)
+        .expect("invalid domain")
+        .chars()
+        .filter(|&c| c != '\u{0000}')
+        .collect();
+    // 9 publicKeyHash
+    let mut temp = str2bytes32(&pubdata[9]);
+    temp.reverse();
+    let pubkey_hash = hex::encode(temp);
+    // 10 emailNullifier
+    let mut temp = str2bytes32(&pubdata[10]);
+    temp.reverse();
+    let email_nullifier = hex::encode(temp);
+    // 11 emailHash
+    let mut temp = str2bytes32(&pubdata[11]);
+    temp.reverse();
+    let email_hash = hex::encode(temp);
+    // 12 eth_address
+    let eth_address = bs58::encode(fieldstr2bytes(pubdata[12..13].to_vec(), 25)).into_string();
+    // 13 validator
+    let validator = bs58::encode(fieldstr2bytes(pubdata[13..14].to_vec(), 25)).into_string();
     // 14-15 pubkey_bytes
     let pubkey_bytes_left = fieldstr2bytes(pubdata[14..15].to_vec(), 16);
     let pubkey_bytes_right = fieldstr2bytes(pubdata[15..16].to_vec(), 16);
