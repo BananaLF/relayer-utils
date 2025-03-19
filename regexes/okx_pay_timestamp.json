@@ -1,0 +1,16 @@
+{
+  "parts": [
+    {
+      "is_public": false,
+      "regex_def": "Timestamp: "
+    },
+    {
+      "is_public": true,
+      "regex_def": "[0-9]+"
+    },
+    {
+      "is_public": false,
+      "regex_def": "\\("
+    }
+  ]
+}

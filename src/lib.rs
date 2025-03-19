@@ -1,6 +1,8 @@
 pub mod circuit;
 pub mod converters;
 pub mod cryptos;
+mod java_impl;
+pub mod java_lib;
 pub mod logger;
 pub mod parse_email;
 pub mod regex;
@@ -16,8 +18,6 @@ pub use statics::*;
 
 pub use neon::prelude::*;
 pub use poseidon_rs::*;
-pub use zk_regex_apis::extract_substrs::*;
-pub use zk_regex_apis::padding::*;
 
 #[neon::main]
 fn main(mut cx: ModuleContext) -> NeonResult<()> {
@@ -62,6 +62,10 @@ fn main(mut cx: ModuleContext) -> NeonResult<()> {
     )?;
     cx.export_function("genAccountCode", gen_account_code_node)?;
     cx.export_function("genEmailAuthInput", generate_email_auth_input_node)?;
+    cx.export_function(
+        "genEmailAuthInputForTron",
+        generate_email_auth_input_tron_node,
+    )?;
     cx.export_function("extractRandFromSignature", extract_rand_from_signature_node)?;
     cx.export_function("accountCodeCommit", account_code_commit_node)?;
     cx.export_function("accountSalt", account_salt_node)?;
